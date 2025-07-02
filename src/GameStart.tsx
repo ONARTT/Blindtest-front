@@ -1,7 +1,7 @@
 import videoData from "./assets/videos.json"
 import displayVideo, { video } from './displayVideo'
 import { useRef, useState, useEffect } from "react";
-import { useTimer } from "./Timer";
+import { Timer } from "./Timer";
 
 
 const GameStart = () => {
@@ -9,15 +9,8 @@ const GameStart = () => {
     const audioRef = useRef<HTMLAudioElement |null>(null);
     const [currentSong, setCurrentSong] = useState<string | undefined>(undefined);
     const [resetKey, setResetKey] = useState(0);
-    const timer = useTimer(15, resetKey);
-    const timerRef = useRef(timer);
-
-
-
-
-
-    
-    var playlist: number[] = [];
+    const [time, setTime] = useState(0);
+     var playlist: number[] = [];
     
     
     const fillPlaylist = (max: number, count: number) => {
@@ -42,6 +35,11 @@ const GameStart = () => {
     }
 
     
+    const getTime = (timeSec: number) => {
+        setTime(timeSec);
+    }
+
+
     const handleClick = async () => {
         await changeAudio(vidId);
         if(audioRef.current) {
@@ -54,28 +52,26 @@ const GameStart = () => {
     }
 
 
+
+
+    //Game Start
+
     useEffect(() => {
         fillPlaylist(4,4);
     }, []);
 
-    useEffect(() => {
-        timerRef.current = timer;
-    }, [timer]);
+   
+
     
 
-
-
-
-
-
-
+    
    
     return (
         <> 
-            <div>{timer}</div>
+            <div>{time}</div>
             <button onClick={handleClick}>test audio</button>
             <audio id="audioPlayer" ref={audioRef} src={currentSong} preload='auto'></audio>
-            
+            <Timer duration={5} resetKey={0} getTime={getTime}></Timer>
         </>
     )
 }
