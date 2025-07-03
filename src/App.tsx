@@ -34,11 +34,11 @@ function App() {
 
 
         <input id="inputGuess" placeholder='Guess ...' value={guess} onKeyDown={handleGuess} onChange={(e) => setGuess(e.target.value)}></input>
-        <button id="startButton" onClick={() => {document.getElementById("vidContainer")?.insertBefore(displayVideo(vidId), document.getElementById("inputGuess")); setStartTimer(true);}}>Start</button>
+        <button id="startButton" onClick={() => { setStartTimer(true);}}>Start</button>
         <button onClick={() => setStartTimer(true)}>Start Timer </button> 
         <button onClick={() => setStartTimer(false)}>Stop Timer </button> 
         
-        <GameStart></GameStart>
+        {startTimer && <GameStart></GameStart>}
       </div>
     </div>
   )

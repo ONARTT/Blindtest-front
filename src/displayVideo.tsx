@@ -19,7 +19,7 @@ var displayVideo = (id: number) => {
     node.setAttribute('width', '560' );
     node.setAttribute('height', '315' );
 
-    return node
+    return document.getElementById("vidContainer")?.insertBefore(node, document.getElementById("inputGuess"));
 
     
 }
