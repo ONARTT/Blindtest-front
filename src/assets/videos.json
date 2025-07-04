@@ -1,9 +1,9 @@
 {
     "video": [
-        {"name": "Good News", "url": "https://www.youtube.com/embed/iSSmoEuL6dw?si=7wMn0KgTnfjB4HGX?autoplay=1", "file": "/assets/songs/goodnews.mp3"},
-        {"name": "Worthy", "url": "https://www.youtube.com/embed/aoUre3Ro-9I?si=9Hw_-MCi7Xhr6d4M?autoplay=1", "file": "/assets/songs/RWBY Volume 9  Worthy (Bmblb Pt.2) - Casey Lee Williams & Ariyel ft. Martin Gonzalez.mp3"},  
-        {"name": "Awake", "url": "https://www.youtube.com/embed/UYEZL13MUFk?si=EFvF51VA3TWkKSEv?autoplay=1", "file": "/assets/songs/AWAKE  星街すいせい(official).mp3"},
-        {"name": "Sunsex", "url": "https://www.youtube.com/embed/9N7_Qt0R-NU?si=P3E-JdOOcDadyezg?autoplay=1", "file": "/assets/songs/HOUDI - SUNSEX.mp3"}
+        {"name": "Good News", "artist": "Phelto" , "url": "https://www.youtube.com/embed/iSSmoEuL6dw?si=7wMn0KgTnfjB4HGX?autoplay=1", "file": "/assets/songs/goodnews.mp3"},
+        {"name": "Worthy", "artist": "Casey Lee Williams", "url": "https://www.youtube.com/embed/aoUre3Ro-9I?si=9Hw_-MCi7Xhr6d4M?autoplay=1", "file": "/assets/songs/RWBY Volume 9  Worthy (Bmblb Pt.2) - Casey Lee Williams & Ariyel ft. Martin Gonzalez.mp3"},  
+        {"name": "Awake", "artist": "Suisei", "url": "https://www.youtube.com/embed/UYEZL13MUFk?si=EFvF51VA3TWkKSEv?autoplay=1", "file": "/assets/songs/AWAKE  星街すいせい(official).mp3"},
+        {"name": "Sunsex", "artist": "Houdi", "url": "https://www.youtube.com/embed/9N7_Qt0R-NU?si=P3E-JdOOcDadyezg?autoplay=1", "file": "/assets/songs/HOUDI - SUNSEX.mp3"}
 
     ]
 }

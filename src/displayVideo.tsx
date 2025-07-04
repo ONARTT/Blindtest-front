@@ -3,6 +3,7 @@ import videosData from "./assets/videos.json"
 
 export interface Video {
   name: string;
+  artist: string;
   url: string;
   file: string;
 }
