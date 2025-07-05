@@ -21,7 +21,6 @@ function App() {
 
         
         <button id="startButton" onClick={() => { setStartTimer(true);}}>Start</button>
-        <button onClick={() => setStartTimer(true)}>Start Timer </button> 
         <button onClick={() => setStartTimer(false)}>Stop Timer </button> 
         
         {startTimer && <GameStart></GameStart>}

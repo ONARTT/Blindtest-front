@@ -25,8 +25,10 @@ const GameStart = () => {
     const audioRef = useRef(new Audio());
     const [round, setRound] = useState(0);
     const [score, setScore] = useState(0);
-    var guess: string;
-   
+    const [guess, setGuess] = useState("");
+    const [artistFound, setArtistFound] = useState(false);
+    const [titleFound, setTitleFound] = useState(false);
+    const roundTime: number = 10;
 
     const fillPlaylist = (max: number, count: number) => {
         setPlaylist([]);
@@ -43,29 +45,47 @@ const GameStart = () => {
     
    
     const nextRound = () => {
+        let currentScore: number = 0;
+        if(artistFound) {
+            currentScore = currentScore + 5;
+        } 
+        if(titleFound) {
+            currentScore = currentScore + 5;
+        }  
+        if(titleFound && artistFound) {
+            currentScore = currentScore + 5;
+        }
+        setScore(score + currentScore);
 
-      
-      setTimeout(() => {
-        console.log('test');
-        clearAnswer();
-        start(5);
-      },5000);
+        setTimeout(() => {
+            console.log('test');
+            clearAnswer();
+            setArtistFound(false);
+            setTitleFound(false);
+            start(roundTime);
+        },5000);
       
     }
 
     
 
-    function setGuess(e: string) {
-        return guess = e;
-    }
+ 
 
     const handleGuess = (e: React.KeyboardEvent) => {
 
-    if (e.key == 'Enter') {
-        if (guess == video[playlist[round-1]].name) {
-            setScore(score +5);
+        if (e.key == 'Enter') {
+            const guessOutput = guess.toLowerCase().replace(/\s/g, '');
+
+            if (guessOutput.indexOf((video[playlist[round-1]].name).toLowerCase().replace(/\s/g, '')) != -1) {
+                setTitleFound(true);
+            }
+
+            if (guessOutput.indexOf((video[playlist[round-1]].artist).toLowerCase().replace(/\s/g, '')) != -1) {
+                setArtistFound(true);
+            }
+
+            setGuess("");
         }
-     }
     
     }
 
@@ -80,7 +100,7 @@ const GameStart = () => {
 
    useEffect(() => {
         const audio = audioRef.current;
-        if(time >= 5) {
+        if(time >= roundTime) {
             audio.pause();
             showAnswer(video[playlist[round-1]].artist, video[playlist[round-1]].name);
             if( round < 4) {
@@ -88,7 +108,7 @@ const GameStart = () => {
             }
             
         } else if(round <= 3) {
-            start(5);
+            start(roundTime);
             setRound(round+1);
             console.log('round', round);
             console.log('playlist', playlist[round]);
@@ -108,7 +128,6 @@ const GameStart = () => {
         <> 
             <input id="inputGuess" placeholder='Guess ...' value={guess} onKeyDown={handleGuess} onChange={(e) => setGuess(e.target.value)}></input>
             <div>{time}</div>
-            <button onClick={()=> start(5)}>test audio</button>
             <div>
                 <Scores score={score}></Scores>
             </div>
