@@ -6,7 +6,7 @@ import GameStart from "./GameStart.tsx";
 import useLogin from "./useLogin.ts";
 import WebPlayback from "./SpotifyPlayer.tsx";
 import Cookies from "js-cookie";
-
+import YoutubePlayer from "./YoutubePlayer.tsx";
 
 
 
@@ -17,6 +17,7 @@ function App() {
     connectToSpotify,
     getUserSongs,
   } = useLogin()
+  
 
   const token = Cookies.get("access_token");
 
@@ -38,7 +39,9 @@ function App() {
         {startTimer && <GameStart></GameStart>}
 
         <button onClick={() => setTest(true)}>test </button> 
-        {test && <WebPlayback token={token}></WebPlayback>}
+        <script src="https://www.youtube.com/iframe_api"></script>
+        {test && <YoutubePlayer></YoutubePlayer>}
+        
       </div>
     </div>
   )
