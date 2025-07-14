@@ -90,6 +90,10 @@ const GameStart = () => {
     }
 
 
+    const volumeSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        audioRef.current.volume = parseFloat(e.target.value)/10
+    }
+
 
     //Game Start
 
@@ -131,6 +135,8 @@ const GameStart = () => {
             <div>
                 <Scores score={score}></Scores>
             </div>
+
+            <input type="range" id="volume" name="volume" min="0" max="10" onChange={(e) => volumeSelect(e)}></input>
         </>
     )
 }
