@@ -8,29 +8,44 @@ declare global {
   }
 }
 
-const YoutubePlayer = () => {
-    
+interface IYoutubePlayer {
+    getPlayer: Function,
+    first: string
+}
+
+const YoutubePlayer = (props: IYoutubePlayer) => {
+
+    let ytPlayer: YT.Player;
     useEffect(() => {
         const tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
         document.body.appendChild(tag);
 
         window.onYouTubeIframeAPIReady = () => {
-            const ytPlayer = new window.YT.Player('player', {
+            ytPlayer = new window.YT.Player('player', {
             height: '360',
             width: '640',
-            videoId: 'OgXurg65hIE',
+            videoId: props.first,
             events: {
-                onReady: (event) => event.target.playVideo(),
+                onReady: (event) => {event.target.playVideo(); props.getPlayer(ytPlayer);}
             },
             });
-        };
-    }, []);
             
-      
+        };
+        
+    }, []);
+     
+    
+   
     
     return (
-        <div id="player"></div>
+        <>
+        <div>
+             <div id="player"></div>
+        </div>
+        </>
+        
+       
     )
         
     
