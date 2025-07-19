@@ -7,6 +7,7 @@ import useAnswer from "./useAnswer";
 import Scores from "./Scores";
 import YoutubePlayer from "./YoutubePlayer";
 import { EnrichedTrack } from "./App.tsx";
+import useYtSearch from "./usePlayer.ts";
 
 
 interface IGameStart {
@@ -24,6 +25,10 @@ const GameStart = (props: IGameStart) => {
         clearAnswer,
     } = useAnswer()
 
+    const {
+        ytSearch,
+    } = useYtSearch();
+
     const vidId = Math.floor(Math.random() * 4);
     const [resetKey, setResetKey] = useState(0);
     const time = timeSec;
@@ -37,12 +42,13 @@ const GameStart = (props: IGameStart) => {
     const [test, setTest] = useState(false);
     const [player, setPlayer] = useState<YT.Player | null>(null);
     const [nextVid, setNextVid] = useState("");
+    const [nextSong, setNextSong] = useState();
 
 
 
     
    
-    const nextRound = () => {
+    const nextRound = async () => {
         let currentScore: number = 0;
         if(artistFound) {
             currentScore = currentScore + 5;
@@ -54,6 +60,9 @@ const GameStart = (props: IGameStart) => {
             currentScore = currentScore + 5;
         }
         setScore(score + currentScore);
+
+        const currentSong = await ytSearch(`${props.playlist[round].artist} ${props.playlist[round].name}`);
+        setNextSong(currentSong);
 
         setTimeout(() => {
             clearAnswer();
@@ -127,7 +136,9 @@ const GameStart = (props: IGameStart) => {
 
     const gameHandler = async () => {
         console.log("player", await player);
+
         
+        console.log('current', nextSong);
         if(time >= roundTime) {
             player?.pauseVideo();
             //showAnswer(video[playlist[round-1]].artist, video[playlist[round-1]].name);
@@ -139,7 +150,10 @@ const GameStart = (props: IGameStart) => {
             start(roundTime);
             setRound(round+1);
             console.log(props.playlist);
-            player?.loadVideoById("s5fEG1omAUE")
+            if (nextSong) {
+                player?.loadVideoById(nextSong)
+            }
+            
             player?.playVideo();
         }
     }
@@ -160,9 +174,7 @@ const GameStart = (props: IGameStart) => {
 
             <input type="range" id="volume" name="volume" min="0" max="10" onChange={(e) => volumeSelect(e)}></input>
 
-
-            <script src="https://www.youtube.com/iframe_api"></script>
-            <YoutubePlayer getPlayer={getPlayer} first='OgXurg65hIE'></YoutubePlayer>
+            
 
         
         </>

@@ -7,13 +7,14 @@ import useLogin from "./useLogin.ts";
 import WebPlayback from "./SpotifyPlayer.tsx";
 import Cookies from "js-cookie";
 import YoutubePlayer from "./YoutubePlayer.tsx";
-import useYtSearch from "./useYtSearch.ts";
+import useYtSearch from "./usePlayer.ts";
 
-interface TrackInfo {
+export interface TrackInfo {
   added_at: string;
   name: string;
   artist: string;
   url: string;
+  uri: string;
 }
   
 export interface EnrichedTrack extends TrackInfo {
@@ -25,12 +26,14 @@ function App() {
   const [test, setTest] = useState(false);
   const [playlist, setPlaylist] = useState([]);
   const [final, setFinal] = useState<EnrichedTrack[]>()
+  const [device_id, setDeviceId] = useState();
   const {
     connectToSpotify,
     getUserSongs,
   } = useLogin()
   const {
     ytSearch,
+    loadTrack,
   } = useYtSearch();
   
 
@@ -50,21 +53,24 @@ function App() {
         const data = await res.json();
         setPlaylist(data);
     }
-  fillPlaylist(449,30);
+  
 
-  const addYtIDs = async (tracks: (TrackInfo | null)[]) => {
-    const filtered = tracks.filter((t): t is TrackInfo => t !== null);
-    const enrichedTracks = await Promise.all(
-      filtered.map(async(track) => {
-        const youtubeId: string = await ytSearch(`${track.artist} ${track.name}`);
-        return {
-          ...track,
-          youtubeId,
-        };
-      })
-    );
-    return enrichedTracks
-  }
+  useEffect(() => {
+    fillPlaylist(449,30);
+  },[])
+  // const addYtIDs = async (tracks: (TrackInfo | null)[]) => {
+  //   const filtered = tracks.filter((t): t is TrackInfo => t !== null);
+  //   const enrichedTracks = await Promise.all(
+  //     filtered.map(async(track) => {
+  //       const youtubeId: string = await ytSearch(`${track.artist} ${track.name}`);
+  //       return {
+  //         ...track,
+  //         youtubeId,
+  //       };
+  //     })
+  //   );
+  //   return enrichedTracks
+  // }
   
   
 
@@ -84,7 +90,10 @@ function App() {
         <button id="startButton" onClick={() => { setStartTimer(true);}}>Start</button>
         <button onClick={() => setStartTimer(false)}>Stop Timer </button> 
         
-        {startTimer && final && <GameStart playlist={final}></GameStart>}
+        <WebPlayback ></WebPlayback>
+        {startTimer && <GameStart playlist={playlist}></GameStart>}
+        
+        {token &&<button onClick={() => loadTrack(token, playlist)}>load </button> }
 
         
       </div>
