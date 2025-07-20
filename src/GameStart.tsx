@@ -6,12 +6,14 @@ import showAnswer from "./useAnswer";
 import useAnswer from "./useAnswer";
 import Scores from "./Scores";
 import YoutubePlayer from "./YoutubePlayer";
-import { EnrichedTrack } from "./App.tsx";
+import { EnrichedTrack, TrackData } from "./App.tsx";
 import useYtSearch from "./usePlayer.ts";
-
+import PlayerPage from "./SpotifyPlayer.tsx";
 
 interface IGameStart {
-    playlist: EnrichedTrack[]
+    playlist: EnrichedTrack[];
+    player: Spotify.Player | undefined;
+    trackData: TrackData;
 }
 const GameStart = (props: IGameStart) => {
     const {
@@ -27,6 +29,7 @@ const GameStart = (props: IGameStart) => {
 
     const {
         ytSearch,
+        loadTrack,
     } = useYtSearch();
 
     const vidId = Math.floor(Math.random() * 4);
@@ -40,11 +43,10 @@ const GameStart = (props: IGameStart) => {
     const [titleFound, setTitleFound] = useState(false);
     const roundTime: number = 10;
     const [test, setTest] = useState(false);
-    const [player, setPlayer] = useState<YT.Player | null>(null);
+    const [player, setPlayer] = useState<Spotify.Player | null>(null);
     const [nextVid, setNextVid] = useState("");
-    const [nextSong, setNextSong] = useState();
-
-
+    const answerPage = document.getElementById("answer");
+    const [renderHandle, setRenderHandle] = useState(0);
 
     
    
@@ -61,10 +63,12 @@ const GameStart = (props: IGameStart) => {
         }
         setScore(score + currentScore);
 
-        const currentSong = await ytSearch(`${props.playlist[round].artist} ${props.playlist[round].name}`);
-        setNextSong(currentSong);
+       
 
         setTimeout(() => {
+            if( answerPage != null) {
+                answerPage.style.visibility = "hidden";
+            }
             clearAnswer();
             setArtistFound(false);
             setTitleFound(false);
@@ -73,22 +77,30 @@ const GameStart = (props: IGameStart) => {
       
     }
 
-    
+    const cleanTitle = (title: string) => {
+    return title
+        .normalize("NFD")               // Split accented letters into base + diacritics
+        .replace(/[\u0300-\u036f]/g, '') // Remove the diacritics
+        .replace(/\(.*?\)/g, '')        // Remove anything in parentheses
+        .replace(/\s/g, '')             // Remove all whitespace
+        .replace(/[^\w\s]|_/g, '') 
+        .toLowerCase();                 // Optional: make lowercase
+    };
 
  
 
     const handleGuess = (e: React.KeyboardEvent) => {
 
         if (e.key == 'Enter') {
-            const guessOutput = guess.toLowerCase().replace(/\s/g, '');
+            const guessOutput = cleanTitle(guess);
 
-            // if (guessOutput.indexOf((video[props.playlist[round-1]].name).toLowerCase().replace(/\s/g, '')) != -1) {
-            //     setTitleFound(true);
-            // }
+            if (guessOutput.indexOf(cleanTitle(props.playlist[round-1].name)) != -1) {
+                setTitleFound(true);
+            }
 
-            // if (guessOutput.indexOf((video[props.playlist[round-1]].artist).toLowerCase().replace(/\s/g, '')) != -1) {
-            //     setArtistFound(true);
-            // }
+            if (guessOutput.indexOf(cleanTitle(props.playlist[round-1].artist)) != -1) {
+                setArtistFound(true);
+            }
 
             setGuess("");
         }
@@ -96,14 +108,6 @@ const GameStart = (props: IGameStart) => {
     }
 
 
-    const volumeSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        audioRef.current.volume = parseFloat(e.target.value)/10
-    }
-
-
-    const getPlayer = (player: YT.Player) => {
-        setPlayer(player);
-    }
 
     //Game Start
 
@@ -131,34 +135,41 @@ const GameStart = (props: IGameStart) => {
 //         }
 //    }, [timeEnd]);
 
-
-   useEffect(() => {
-
-    const gameHandler = async () => {
-        console.log("player", await player);
+const gameHandler = async () => {
+        console.log("player", await props.player);
 
         
-        console.log('current', nextSong);
         if(time >= roundTime) {
-            player?.pauseVideo();
-            //showAnswer(video[playlist[round-1]].artist, video[playlist[round-1]].name);
-            if( round < 4) {
-                nextRound();
+            
+            showAnswer(props.playlist[round-1].artist, props.playlist[round-1].name);
+            
+            if( answerPage != null) {
+                answerPage.style.visibility='visible';
             }
             
-        } else if(round <= 3) {
+            
+            if( round < 10) {
+                nextRound();
+            } else {
+                player?.togglePlay();
+            }
+            
+        } else if(round <= 9) {
             start(roundTime);
             setRound(round+1);
             console.log(props.playlist);
-            if (nextSong) {
-                player?.loadVideoById(nextSong)
-            }
             
-            player?.playVideo();
+            loadTrack(props.playlist[round].uri)
+            
+            
+            
         }
     }
-    gameHandler();
-   }, [timeEnd]);
+
+
+    useEffect(() => {
+        gameHandler();
+    }, [timeEnd]);
 
     
    
@@ -166,15 +177,18 @@ const GameStart = (props: IGameStart) => {
    
     return (
         <> 
+
+            <PlayerPage player={props.player} trackData={props.trackData}></PlayerPage>
             <input id="inputGuess" placeholder='Guess ...' value={guess} onKeyDown={handleGuess} onChange={(e) => setGuess(e.target.value)}></input>
             <div>{time}</div>
             <div>
                 <Scores score={score}></Scores>
             </div>
 
-            <input type="range" id="volume" name="volume" min="0" max="10" onChange={(e) => volumeSelect(e)}></input>
+            <input type="range" id="volume" name="volume" min="0" max="100" onChange={(e) => props.player?.setVolume((parseInt(e.target.value))/100)}></input>
 
             
+
 
         
         </>

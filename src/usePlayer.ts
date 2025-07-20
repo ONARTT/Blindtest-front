@@ -4,7 +4,9 @@ import Cookies from "js-cookie";
 
 const useYtSearch = () => {
     
-    const device_id = Cookies.get("device_id")
+    const device_id = Cookies.get("device_id");
+    const accessToken = Cookies.get("access_token");
+
     const ytSearch = async (query: string) => {
         const video = "video=" + query
         const test = await fetch("http://127.0.0.1:3000/search?" + video, {
@@ -17,9 +19,9 @@ const useYtSearch = () => {
     }
 
 
-    const loadTrack = async (accessToken: string, playlist: TrackInfo[]) => {
+    const loadTrack = async (currentSong: string) => {
 
-        const uri  = playlist[0].uri;
+        const uri  = currentSong;
         console.log("uri", uri)
 
         const playRequestOptions: RequestInit = {
@@ -30,7 +32,7 @@ const useYtSearch = () => {
         },
         body: JSON.stringify({
             "uris": [uri],
-            "position_ms": 0
+            "position_ms": Math.floor(Math.random() * 60000)
         })
         }
         
@@ -38,6 +40,8 @@ const useYtSearch = () => {
         const playRequestData = await playRequestResponse.json();
         console.log(playRequestData);
     } 
+
+
 
 
     return {

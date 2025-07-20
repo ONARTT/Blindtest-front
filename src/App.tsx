@@ -21,12 +21,48 @@ export interface EnrichedTrack extends TrackInfo {
   youtubeId: string,
 }
 
+export interface TrackData {
+  device_id: string | undefined;
+  is_paused: boolean;
+  is_active: boolean;
+  current_track: Track;
+}
+
+export type Track = {
+  name: string;
+  album: {
+    images: {
+      url: string;
+    }[];
+  };
+  artists: {
+    name: string;
+  }[];
+};
+
+const track = {
+    name: "",
+    album: {
+        images: [
+            { url: "" }
+        ]
+    },
+    artists: [
+        { name: "" }
+    ]
+}
+
+
 function App() {
   const [startTimer, setStartTimer] = useState(false);
   const [test, setTest] = useState(false);
   const [playlist, setPlaylist] = useState([]);
   const [final, setFinal] = useState<EnrichedTrack[]>()
-  const [device_id, setDeviceId] = useState();
+  const [player, setPlayer] = useState<Spotify.Player>();
+  const [device_id, setDeviceId] = useState<string>();
+  const [is_paused, setPaused] = useState(false);
+  const [is_active, setActive] = useState(false);
+  const [current_track, setTrack] = useState(track);
   const {
     connectToSpotify,
     getUserSongs,
@@ -37,7 +73,7 @@ function App() {
   } = useYtSearch();
   
 
-  const token = Cookies.get("access_token");
+  const accessToken = Cookies.get("access_token");
 
   
   const fillPlaylist = async (max: number, count: number) => {
@@ -72,7 +108,65 @@ function App() {
   //   return enrichedTracks
   // }
   
+
+   useEffect(() => {
+      if (accessToken){
+        const script = document.createElement("script");
+        script.src = "https://sdk.scdn.co/spotify-player.js";
+        script.async = true;
   
+        document.body.appendChild(script);
+  
+        window.onSpotifyWebPlaybackSDKReady = () => {
+  
+            const player = new window.Spotify.Player({
+                name: 'Web Playback SDK',
+                getOAuthToken: cb => { cb(accessToken); },
+                volume: 0.09
+            });
+  
+            setPlayer(player);
+  
+            player.addListener('ready', ({ device_id }) => {
+                console.log('Ready with Device ID', device_id);
+                setDeviceId(device_id);
+                document.cookie ="device_id=" + device_id;
+            });
+  
+            player.addListener('not_ready', ({ device_id }) => {
+                console.log('Device ID has gone offline', device_id);
+            });
+  
+            player.addListener('player_state_changed', ( state => {
+                if (!state) {
+                    return;
+                }
+  
+                setTrack(state.track_window.current_track);
+                setPaused(state.paused);
+  
+                player.getCurrentState().then( state => { 
+                    (!state)? setActive(false) : setActive(true) 
+                });
+            }));
+  
+            console.log("is active",is_active);
+            console.log("track",track);
+            console.log("curent_track",current_track);
+  
+            player.connect();
+        }
+      };
+     
+    }, []);
+  
+    const trackData: TrackData = {
+      current_track: current_track,
+      device_id: device_id,
+      is_active: is_active,
+      is_paused: is_paused,
+
+    }
 
   return (
     <div>
@@ -90,10 +184,8 @@ function App() {
         <button id="startButton" onClick={() => { setStartTimer(true);}}>Start</button>
         <button onClick={() => setStartTimer(false)}>Stop Timer </button> 
         
-        <WebPlayback ></WebPlayback>
-        {startTimer && <GameStart playlist={playlist}></GameStart>}
+        {startTimer && <GameStart playlist={playlist} player={player} trackData={trackData}></GameStart>}
         
-        {token &&<button onClick={() => loadTrack(token, playlist)}>load </button> }
 
         
       </div>

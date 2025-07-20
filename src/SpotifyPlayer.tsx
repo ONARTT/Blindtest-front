@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import Cookies from "js-cookie";
+import { Track, TrackData } from "./App.tsx";
+
 
 declare global {
   interface Window {
     onSpotifyWebPlaybackSDKReady: () => void;
   }
+}
+
+interface IPlayerPage {
+  player: Spotify.Player | undefined;
+  trackData: TrackData;
 }
 
 const track = {
@@ -20,65 +27,14 @@ const track = {
 }
 
 
-export const PlayerPage = () => {
-  const [player, setPlayer] = useState<Spotify.Player>();
+export const PlayerPage = (props: IPlayerPage) => {
   const [device_id, setDeviceId] = useState<string>();
   const [is_paused, setPaused] = useState(false);
-  const [is_active, setActive] = useState(false);
-  const [current_track, setTrack] = useState(track);
+
 
   const  accessToken  = Cookies.get("access_token");
 
-  useEffect(() => {
-    if (accessToken){
-      const script = document.createElement("script");
-      script.src = "https://sdk.scdn.co/spotify-player.js";
-      script.async = true;
 
-      document.body.appendChild(script);
-
-      window.onSpotifyWebPlaybackSDKReady = () => {
-
-          const player = new window.Spotify.Player({
-              name: 'Web Playback SDK',
-              getOAuthToken: cb => { cb(accessToken); },
-              volume: 0.09
-          });
-
-          setPlayer(player);
-
-          player.addListener('ready', ({ device_id }) => {
-              console.log('Ready with Device ID', device_id);
-              setDeviceId(device_id);
-              document.cookie ="device_id=" + device_id;
-          });
-
-          player.addListener('not_ready', ({ device_id }) => {
-              console.log('Device ID has gone offline', device_id);
-          });
-
-          player.addListener('player_state_changed', ( state => {
-              if (!state) {
-                  return;
-              }
-
-              setTrack(state.track_window.current_track);
-              setPaused(state.paused);
-
-              player.getCurrentState().then( state => { 
-                  (!state)? setActive(false) : setActive(true) 
-              });
-          }));
-
-          console.log(is_active);
-          console.log(track);
-          console.log(current_track);
-
-          player.connect();
-      }
-    };
-   
-  }, []);
 
   const searchAndLoadTrack = async () => {
     const searchRequestOptions: RequestInit = {
@@ -108,47 +64,49 @@ export const PlayerPage = () => {
     
     const playRequestResponse = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${device_id}`, playRequestOptions);
     const playRequestData = await playRequestResponse.json();
-    console.log(playRequestData);
+    console.log("playrequestData",playRequestData);
   } 
 
 
 
   return (
-    <>
-      <div className="container">
-          {current_track.album.images[0].url &&
-            <div className="main-wrapper">
-              <img src={current_track.album.images[0].url} 
-                    className="now-playing__cover" alt="" />
+    <div className='answerBlock'>
+      <div id="answer" style={{visibility: "hidden"}}>
+        <div className="container">
+            {props.trackData.current_track.album.images[0].url &&
+              <div className="main-wrapper">
+                <img src={props.trackData.current_track.album.images[0].url} 
+                      className="now-playing__cover" alt="" />
 
-              <div className="now-playing__side">
-                  <div className="now-playing__name">{
-                                current_track.name
-                                }</div>
+                <div className="now-playing__side">
+                    <div className="now-playing__name">{
+                                  props.trackData.current_track.name
+                                  }</div>
 
-                  <div className="now-playing__artist">{
-                                current_track.artists[0].name
-                                }</div>
-              </div>
-          </div>}
-          {player && (
-            <>
-              <button className="btn-spotify" onClick={() => { player.previousTrack() }} >
-                    &lt;&lt;
-              </button>
+                    <div className="now-playing__artist">{
+                                  props.trackData.current_track.artists[0].name
+                                  }</div>
+                </div>
+            </div>}
+            {props.player && (
+              <>
+                <button className="btn-spotify" onClick={() => { props.player?.previousTrack() }} >
+                      &lt;&lt;
+                </button>
 
-              <button className="btn-spotify" onClick={() => { player.togglePlay() }} >
-                  { is_paused ? "PLAY" : "PAUSE" }
-              </button>
+                <button className="btn-spotify" onClick={() => { props.player?.togglePlay() }} >
+                    { is_paused ? "PLAY" : "PAUSE" }
+                </button>
 
-              <button className="btn-spotify" onClick={() => { player.nextTrack() }} >
-                    &gt;&gt;
-              </button>
-            </>
-          )}<br/>
-          <button onClick={() => {searchAndLoadTrack()}}>Search</button>
+                <button className="btn-spotify" onClick={() => { props.player?.nextTrack() }} >
+                      &gt;&gt;
+                </button>
+              </>
+            )}<br/>
+            <button onClick={() => {searchAndLoadTrack()}}>Search</button>
+        </div>
+        </div>
       </div>
-      </>
   )
 }
 
